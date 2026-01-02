@@ -29,18 +29,18 @@ export const OptionButton = ({
 
   let finalStyle = defaultStyle;
 
-  if (isSelected && isCorrect) {
-    finalStyle = correctStyle;
-  }
-
-  if (isWrong) {
-    finalStyle = wrongStyle;
-  }
+  if (isSelected && isCorrect) finalStyle = correctStyle;
+  if (isWrong) finalStyle = wrongStyle;
 
   return (
     <button
       className={`${baseStyle} ${finalStyle}`}
-      onClick={() => onSelect(option)}
+      onClick={() => {
+        if (!selectedOption) {
+          onSelect(option);
+        }
+      }}
+      disabled={Boolean(selectedOption)}
     >
       {option}
     </button>
