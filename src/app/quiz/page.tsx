@@ -5,28 +5,40 @@ import { questions } from "@/data/questions";
 import type { Question } from "@/types/question";
 import QuestionCard from "@/components/QuestionCard";
 import Pagination from "@/components/Pagination";
-import Toast from "@/components/Toast";
 
 const PER_PAGE = 5;
 
 const QuizPage = () => {
   const [page, setPage] = useState(1);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [toast, setToast] = useState<null | "correct" | "wrong">(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(0);
 
   const totalPages = Math.ceil(questions.length / PER_PAGE);
-
   const start = (page - 1) * PER_PAGE;
-  const visibleQuestions = questions.slice(start, start + PER_PAGE) as Question[];
+  const visibleQuestions = questions.slice(
+    start,
+    start + PER_PAGE
+  ) as Question[];
 
   const handleAnswer = (id: number, value: string) => {
-    const question = questions.find((q) => q.id === id);
-    if (!question) return;
+    setAnswers((prev) => ({
+      ...prev,
+      [id]: value
+    }));
+  };
 
-    setAnswers((prev) => ({ ...prev, [id]: value }));
-    setToast(value === question.correctAnswer ? "correct" : "wrong");
+  const handleSubmit = () => {
+    let total = 0;
 
-    setTimeout(() => setToast(null), 1500);
+    questions.forEach((q) => {
+      if (answers[q.id] === q.correctAnswer) {
+        total++;
+      }
+    });
+
+    setScore(total);
+    setSubmitted(true);
   };
 
   return (
@@ -41,14 +53,23 @@ const QuizPage = () => {
           />
         ))}
 
-        <Pagination
-          current={page}
-          total={totalPages}
-          onChange={setPage}
-        />
-      </div>
+        <Pagination current={page} total={totalPages} onChange={setPage} />
 
-      {toast && <Toast type={toast} />}
+        {page === totalPages && !submitted && (
+          <button
+            onClick={handleSubmit}
+            className="mt-6 w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700"
+          >
+            Submit Quiz
+          </button>
+        )}
+
+        {submitted && (
+          <div className="mt-6 text-center text-xl font-semibold text-green-700">
+            Your Score: {score} / {questions.length}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
