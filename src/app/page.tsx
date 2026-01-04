@@ -1,24 +1,31 @@
-import Link from "next/link";
+"use client";
 
-const HomePage = () => {
+import { useRouter } from "next/navigation";
+
+const categories = [
+  { label: "JavaScript", value: "javascript" },
+  { label: "React.js", value: "react" },
+  { label: "Next.js", value: "nextjs" }
+];
+
+export default function HomePage() {
+  const router = useRouter();
+
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600">
-      <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
-        <h1 className="text-2xl font-bold mb-4">
-          JavaScript Interview MCQs
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Practice output-based JavaScript interview questions.
-        </p>
-        <Link
-          href="/quiz"
-          className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
-        >
-          Start Practice
-        </Link>
-      </div>
-    </main>
-  );
-};
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6">
+      <h1 className="text-3xl font-bold">Choose a Category</h1>
 
-export default HomePage;
+      <div className="flex gap-4">
+        {categories.map(cat => (
+          <button
+            key={cat.value}
+            onClick={() => router.push(`/questions/${cat.value}`)}
+            className="px-6 py-3 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
