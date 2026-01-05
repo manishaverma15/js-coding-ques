@@ -1,30 +1,47 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { questions } from "@/data/questions";
 import { OptionButton } from "@/components/OptionButton";
+import { getQuizProgress, setQuizProgress } from "@/utils/quizStorage";
 
 export default function QuestionsPage() {
-  const { category } = useParams();
+  const { category } = useParams<{ category: string }>();
+  const storageKey = `quiz-progress-${category}`;
 
   const filteredQuestions = questions.filter(
     q => q.category === category
   );
 
   const [currentPage, setCurrentPage] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>(
-    {}
-  );
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+
+  // LOAD FROM LOCAL STORAGE
+  useEffect(() => {
+    const saved = getQuizProgress(storageKey);
+    if (saved) {
+      setCurrentPage(saved.currentPage);
+      setAnswers(saved.answers);
+    }
+  }, [storageKey]);
+
+  // SAVE TO LOCAL STORAGE
+  useEffect(() => {
+    setQuizProgress(storageKey, {
+      currentPage,
+      answers
+    });
+  }, [currentPage, answers, storageKey]);
 
   const question = filteredQuestions[currentPage];
 
-  const handleSelect = (questionId: number, option: string) => {
-    if (selectedAnswers[questionId]) return;
+  const handleSelect = (id: number, option: string) => {
+    if (answers[id]) return;
 
-    setSelectedAnswers(prev => ({
+    setAnswers(prev => ({
       ...prev,
-      [questionId]: option
+      [id]: option
     }));
   };
 
@@ -34,7 +51,7 @@ export default function QuestionsPage() {
         {category} Questions
       </h2>
 
-      <div className="border rounded-xl p-6">
+      <div className="rounded-xl bg-slate-50 p-6 shadow">
         <p className="font-semibold mb-4">
           Q{currentPage + 1}. {question.question}
         </p>
@@ -50,7 +67,7 @@ export default function QuestionsPage() {
             <OptionButton
               key={option}
               option={option}
-              selectedOption={selectedAnswers[question.id] ?? null}
+              selectedOption={answers[question.id] ?? null}
               correctAnswer={question.correctAnswer}
               onSelect={() => handleSelect(question.id, option)}
             />
